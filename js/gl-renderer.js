@@ -4,6 +4,8 @@
 import * as Shaders from '../build/shaders.js';
 import { font1 } from '../build/font1.js';
 import { font2 } from '../build/font2.js';
+import { font3 } from '../build/font3.js';
+import { font4 } from '../build/font4.js';
 
 const MAX_RECTS = 1024;
 
@@ -17,9 +19,14 @@ export class Renderer {
     _fontConfig = [
         //glyph x, y, hoffset, voffset
         [8,10,0,0],
-        [10,12,0,-40]
+        [10,12,0,-40],
+        [12,14,0,-2],
+        [12,14,0,-2]
     ];
     _fontId = 0;
+    _width = 320;
+    _height = 240;
+    _hardwareVersion = 0;
 
     constructor(bg, onBackgroundChanged) {
         this._bg = [bg[0] / 255, bg[1] / 255, bg[2] / 255];
@@ -39,12 +46,34 @@ export class Renderer {
 
         gl.enable(gl.BLEND);
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-        gl.viewport(0,0, 320, 240);
+        this._gl.viewport(0,0, this._width, this._height);
 
         this._queueFrame();
     }
 
+    setHardware(v) {
+        this._hardwareVersion = v;
+        this._width = 320;
+        this._height= 240;
+
+        if(this._hardwareVersion == 3) {
+            this._width = 480;
+            this._height= 320;
+        }
+
+        this._gl.viewport(0,0, this._width, this._height);
+        document.getElementById('canvas').width = this._width;
+        document.getElementById('canvas').height = this._height;
+
+        this._setupRects(this._gl);
+        this._setupText(this._gl);
+        this._setupWave(this._gl);
+    }
+
     setFont(f) {
+        if(this._hardwareVersion == 3) {
+            f += 2;
+        }
         if(this._fontId == f) return;
         this._fontId = f;
         const gl = this._gl;
@@ -62,7 +91,7 @@ export class Renderer {
     _blitShader;
 
     _setupRects(gl) {
-        this._rectShader = buildProgram(gl, 'rect');
+        this._rectShader = buildProgram(gl, 'rect_v'+(this._hardwareVersion == 3 ? 2 : 1));
 
         this._rectVao = gl.createVertexArray();
         gl.bindVertexArray(this._rectVao);
@@ -80,7 +109,7 @@ export class Renderer {
         this._rectsTex = gl.createTexture();
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, this._rectsTex);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 320, 240, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this._width, this._height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
@@ -90,7 +119,7 @@ export class Renderer {
         gl.bindFramebuffer(gl.FRAMEBUFFER, this._rectsFramebuffer);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this._rectsTex, 0);
 
-        this._blitShader = buildProgram(gl, 'blit');
+        this._blitShader = buildProgram(gl, 'blit_v'+(this._hardwareVersion == 3 ? 2 : 1));
         gl.useProgram(this._blitShader);
         gl.uniform1i(gl.getUniformLocation(this._blitShader, 'src'), 0);
     }
@@ -124,9 +153,8 @@ export class Renderer {
     }
 
     drawRect(x, y, w, h, r, g, b) {
-        if (x === 0 && y === 0 && w === 320 && h === 240) {
+        if (x === 0 && y === 0 && w >= this._width && h >= this._height) {
             this._onBackgroundChanged(r, g, b);
-
             this._bg = [r / 255, g / 255, b / 255];
             this._rectCount = 0;
             this._rectsClear = true;
@@ -158,11 +186,7 @@ export class Renderer {
 
     _setupText(gl) {
         
-        if(this._fontId == 0) {
-            this._textShader = buildProgram(gl, 'text1');
-        } else {
-            this._textShader = buildProgram(gl, 'text2');
-        }
+        this._textShader = buildProgram(gl, 'text'+(this._fontId+1));
         gl.useProgram(this._textShader);
         gl.uniform1i(gl.getUniformLocation(this._textShader, 'font'), 1);
 
@@ -202,6 +226,26 @@ export class Renderer {
                 this._queueFrame();
             }
             fontImage1.src = font1;
+        } else if(this._fontId == 2) {
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 846, 9, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+            const fontImage3 = new Image();
+            fontImage3.onload = () => {
+                gl.activeTexture(gl.TEXTURE1);
+                gl.bindTexture(gl.TEXTURE_2D, this._textTex);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 846, 9, 0, gl.RGBA, gl.UNSIGNED_BYTE, fontImage3);
+                this._queueFrame();
+            }
+            fontImage3.src = font3;
+        } else if(this._fontId == 3) {
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 940, 10, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+            const fontImage4 = new Image();
+            fontImage4.onload = () => {
+                gl.activeTexture(gl.TEXTURE1);
+                gl.bindTexture(gl.TEXTURE_2D, this._textTex);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 940, 10, 0, gl.RGBA, gl.UNSIGNED_BYTE, fontImage4);
+                this._queueFrame();
+            }
+            fontImage4.src = font4;
         } else {
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 752, 9, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
             const fontImage2 = new Image();
@@ -248,12 +292,12 @@ export class Renderer {
         this._queueFrame();
     }
     
-    _waveData = new Uint8Array(320);
+    _waveData = new Uint8Array(484);
     _waveColour = new Float32Array([0.5, 1, 1]);
     _waveOn = false;
 
     _setupWave(gl) {
-        this._waveShader = buildProgram(gl, 'wave');
+        this._waveShader = buildProgram(gl, 'wave_v'+(this._hardwareVersion == 3 ? 2 : 1));
         this._waveShader.colourUniform = gl.getUniformLocation(this._waveShader, 'colour');
         this._waveVao = gl.createVertexArray();
         gl.bindVertexArray(this._waveVao);
@@ -277,7 +321,7 @@ export class Renderer {
                 this._waveData.updated = false;
             }
 
-            gl.drawArrays(gl.POINTS, 0, 320);
+            gl.drawArrays(gl.POINTS, 0, this._width);
         }
     }
 
@@ -288,7 +332,7 @@ export class Renderer {
         
         if (data.length != 0) {
             this._waveData.fill(-1);
-            this._waveData.set(data, 320-data.length);
+            this._waveData.set(data, this._width-data.length);
             this._waveData.updated = true;
             this._waveOn = true;
             this._queueFrame();

@@ -58,7 +58,7 @@ export class Parser {
                         frame[3],
                         EMPTY);
 
-                } else if (frame.length <= 324) {
+                } else if (frame.length <= 484) {
                     this._renderer.drawWave(
                         frame[1],
                         frame[2],
@@ -66,7 +66,8 @@ export class Parser {
                         frame.subarray(4));
 
                 } else {
-                    console.log('Bad WAVE frame');
+
+                    console.log('Bad WAVE frame ('+frame.length+')');
                 }
                 break;
 
@@ -77,6 +78,7 @@ export class Parser {
                 break;
 
             case 0xff: // system
+                this._renderer.setHardware(frame[1]);
                 this._renderer.setFont(frame[5]);
                 break;
             default:

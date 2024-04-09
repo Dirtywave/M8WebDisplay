@@ -27,7 +27,7 @@ endif
 
 index.html: build/index.css js/main.js
 
-js/main.js: $(filter-out js/main.js,$(wildcard js/*.js)) build/shaders.js build/font1.js build/font2.js
+js/main.js: $(filter-out js/main.js,$(wildcard js/*.js)) build/shaders.js build/font1.js build/font2.js build/font3.js build/font4.js
 	@touch $@
 
 build/shaders.js: $(wildcard shaders/*.vert) $(wildcard shaders/*.frag)
@@ -50,6 +50,16 @@ build/font2.js: font2.png
 	@mkdir -p $(@D)
 	@printf "export const font2 = 'data:image/png;base64,$$($(BASE64) $^)';" > $@
 
+build/font3.js: font3.png
+	@echo Building $@
+	@mkdir -p $(@D)
+	@printf "export const font3 = 'data:image/png;base64,$$($(BASE64) $^)';" > $@
+
+build/font4.js: font4.png
+	@echo Building $@
+	@mkdir -p $(@D)
+	@printf "export const font4 = 'data:image/png;base64,$$($(BASE64) $^)';" > $@
+
 build/main.js: js/main.js $(NPM)
 	@echo Building $@
 	@mkdir -p $(@D)
@@ -68,6 +78,12 @@ css/index.scss: $(filter-out css/index.scss,$(wildcard css/*.scss)) build/font1.
 css/index.scss: $(filter-out css/index.scss,$(wildcard css/*.scss)) build/font2.scss
 	@touch $@
 
+css/index.scss: $(filter-out css/index.scss,$(wildcard css/*.scss)) build/font3.scss
+	@touch $@
+
+css/index.scss: $(filter-out css/index.scss,$(wildcard css/*.scss)) build/font4.scss
+	@touch $@
+
 build/font1.scss: m8stealth57.woff2
 	@echo Building $@
 	@mkdir -p $(@D)
@@ -81,6 +97,22 @@ build/font2.scss: m8stealth89.woff2
 	@mkdir -p $(@D)
 	@printf "@font-face {\n\
 	    font-family: 'm8stealth89';\n\
+	    src: url('data:font/woff2;base64,$$($(BASE64) $^)') format('woff2');\n\
+	}" > $@
+
+build/font3.scss: m8stealth99.woff2
+	@echo Building $@
+	@mkdir -p $(@D)
+	@printf "@font-face {\n\
+	    font-family: 'm8stealth99';\n\
+	    src: url('data:font/woff2;base64,$$($(BASE64) $^)') format('woff2');\n\
+	}" > $@
+
+build/font4.scss: m8stealth99.woff2
+	@echo Building $@
+	@mkdir -p $(@D)
+	@printf "@font-face {\n\
+	    font-family: 'm8stealth1010';\n\
 	    src: url('data:font/woff2;base64,$$($(BASE64) $^)') format('woff2');\n\
 	}" > $@
 

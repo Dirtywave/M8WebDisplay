@@ -10,16 +10,22 @@ export class Renderer {
     _frameQueued = false;
     _rects = [];
     _waveColour = 'rgb(255, 255, 255)';
-    _waveData = new Uint8Array(320);
+    _waveData = new Uint8Array(484);
     _waveOn = false;
     _textUpdates = {};
+    _width = 320;
+    _height = 240;
+    _maxScope = 20;
+    _hardwareVersion = 0;
 
     _onBackgroundChanged;
 
     _fontConfig = [
         //glyph x, y, hoffset, voffset
         [8,10,0,0],
-        [10,12,0,-40]
+        [10,12,0,-20],
+        [12,14,0,-2],
+        [12,14,0,-2]
     ];
     
     _fontId = 0;
@@ -33,9 +39,31 @@ export class Renderer {
         this._buildText();
     }
 
+    setHardware(v) {
+        this._hardwareVersion = v;
+        this._width = 320;
+        this._height= 240;
+        this._maxScope = 20;
+
+        if(this._hardwareVersion == 3) {
+            this._width = 480;
+            this._height= 320;
+            this._maxScope = 38;
+        }
+
+        document.getElementById('canvas').width = this._width;
+        document.getElementById('canvas').height = this._height;
+        document.getElementById('display').style.height = (100 * (this._width/this._height)) + 'vh';
+        document.getElementById('display').style.maxWidth = (100 * (this._width/this._height)) + 'vw';
+        window.dispatchEvent(new Event('resize'));
+    }
+
     setFont(f) {
+        if(this._hardwareVersion == 3) {
+            f += 2;
+        }
         if(this._fontId == f) return;
-        this._fontId = f;   
+        this._fontId = f;
         this._buildText();
         this.clear();
     }
@@ -44,14 +72,10 @@ export class Renderer {
         const xmlns = 'http://www.w3.org/2000/svg';
         const svg = document.createElementNS(xmlns, 'svg');
         const canvas = document.getElementById('canvas');
-        svg.setAttributeNS(null, 'viewBox', '0 0 640 480');
+        svg.setAttributeNS(null, 'viewBox', '0 0 '+(this._width * 2)+' '+(this._height * 2));
         svg.setAttributeNS(null, 'id', 'screen');
         svg.setAttributeNS(null, 'style', canvas.getAttribute('style'));
-
-        if(this._fontId == 1) {
-            svg.setAttributeNS(null, 'class', 'big');
-        }
-
+        svg.setAttributeNS(null, 'class', 'font'+this._fontId);
         while (svg.firstChild) {
             svg.removeChild(svg.lastChild);
         }
@@ -64,7 +88,7 @@ export class Renderer {
         for (let y = start; y < 25; y++) {
             for (let x = 0; x < 39; x++) {
                 const e = document.createElementNS(xmlns, 'text');
-                const x_offset = x * (this._fontConfig[this._fontId][0] * 2);
+                const x_offset = ((x * (this._fontConfig[this._fontId][0])) + this._fontConfig[this._fontId][2]) * 2;
 
                 var y_offset = 0;
                 if(this._fontId == 1) {
@@ -73,7 +97,7 @@ export class Renderer {
                         y_offset += 20;
                     }
                 } else {
-                    y_offset = (y * (this._fontConfig[this._fontId][1] * 2))+(this._fontConfig[this._fontId][1] * 2);
+                    y_offset = (y * (this._fontConfig[this._fontId][1] * 2))+((this._fontConfig[this._fontId][1] + this._fontConfig[this._fontId][3]) * 2);
                 }
 
                 
@@ -105,20 +129,20 @@ export class Renderer {
         for (let i = 0; i < this._rects.length; i++) {
             const rect = this._rects[i];
             this._ctx.fillStyle = rect.colour;
-            this._ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
+            this._ctx.fillRect(rect.x, rect.y+this._fontConfig[this._fontId][3], rect.w, rect.h);
         }
         this._rects.length = 0;
 
         if (this._waveUpdated) {
             this._ctx.fillStyle = this._backgroundColour;
-            this._ctx.fillRect(0, 0, 320, 21);
+            this._ctx.fillRect(0, 0, this._width, this._maxScope+1);
 
             if (this._waveOn) {
                 this._ctx.fillStyle = this._waveColour;
                 for (let i = 0; i < this._waveData.length; i++) {
                     if(this._waveData[i] == 255) continue;
-                    const y = Math.min(this._waveData[i], 20);
-                    this._ctx.fillRect(i, y, 1, 1);
+                    const y = Math.min(this._waveData[i], this._maxScope);
+                    this._ctx.fillRect(i, y+this._fontConfig[this._fontId][3], 1, 1);
                 }
             }
         }
@@ -149,7 +173,7 @@ export class Renderer {
 
     drawRect(x, y, w, h, r, g, b) {
         const colour = `rgb(${r}, ${g}, ${b})`
-        if (x === 0 && y === 0 && w === 320 && h >= 240) {
+        if (x === 0 && y === 0 && w >= this._width && h >= this._height) {
             this._rects.length = 0;
             this._backgroundColour = colour;
             this._onBackgroundChanged(r, g, b);
@@ -178,7 +202,7 @@ export class Renderer {
 
         if (data.length != 0) {
             this._waveData.fill(-1);
-            this._waveData.set(data, 320-data.length);
+            this._waveData.set(data, this._width-data.length);
             this._waveOn = true;
             this._waveUpdated = true;
             this._queueFrame();
@@ -193,7 +217,7 @@ export class Renderer {
     clear() {
         this._rects = [{
             colour: this._backgroundColour,
-            x: 0, y: 0, w: 320, h: 240,
+            x: 0, y: 0, w: this._width, h: this._height,
         }];
 
         this._waveOn = false;

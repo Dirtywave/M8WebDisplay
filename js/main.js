@@ -37,15 +37,14 @@ let resizeCanvas = (function() {
         const ratio = devicePixelRatio;
         const dW = display.clientWidth * ratio;
         const svg = document.getElementById('screen');
-
-        if (Settings.get('snapPixels') && dW <= 1600) {
+        if ((Settings.get('snapPixels') && dW <= 1600) || Settings.get('displayType') !== 'webgl2') {
             let dH = display.clientHeight * ratio;
             if (Settings.get('showControls') || Input.isMapping) {
                 dH /= 2;
             }
 
-            const width = Math.floor(dW / 320) * 320 / ratio;
-            const height = Math.floor(dH / 240) * 240 / ratio;
+            const width = Math.floor(dW / canvas.width) * (canvas.width / ratio);
+            const height = Math.floor(dW / canvas.width) * (canvas.height / ratio);
             const left = Math.round((dW / ratio - width) / 2);
             const top = Math.round((dH / ratio - height) / 2);
 
@@ -53,7 +52,6 @@ let resizeCanvas = (function() {
             canvas.style.height = `${height}px`;
             canvas.style.left = `${left}px`;
             canvas.style.top = `${top}px`;
-
             if (svg) {
                 svg.style.width = `${width}px`;
                 svg.style.height = `${height}px`;
