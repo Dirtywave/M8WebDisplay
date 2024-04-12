@@ -6,6 +6,7 @@ import { font1 } from '../build/font1.js';
 import { font2 } from '../build/font2.js';
 import { font3 } from '../build/font3.js';
 import { font4 } from '../build/font4.js';
+import { font5 } from '../build/font5.js';
 
 const MAX_RECTS = 1024;
 
@@ -21,7 +22,8 @@ export class Renderer {
         [8,10,0,0],
         [10,12,0,-40],
         [12,14,0,-2],
-        [12,14,0,-2]
+        [12,14,0,-2],
+        [15,16,0,-54]
     ];
     _fontId = 0;
     _width = 320;
@@ -246,6 +248,16 @@ export class Renderer {
                 this._queueFrame();
             }
             fontImage4.src = font4;
+        } else if(this._fontId == 4) {
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1128, 12, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+            const fontImage5 = new Image();
+            fontImage5.onload = () => {
+                gl.activeTexture(gl.TEXTURE1);
+                gl.bindTexture(gl.TEXTURE_2D, this._textTex);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1128, 12, 0, gl.RGBA, gl.UNSIGNED_BYTE, fontImage5);
+                this._queueFrame();
+            }
+            fontImage5.src = font5;
         } else {
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 752, 9, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
             const fontImage2 = new Image();

@@ -25,7 +25,8 @@ export class Renderer {
         [8,10,0,0],
         [10,12,0,-20],
         [12,14,0,-2],
-        [12,14,0,-2]
+        [12,14,0,-2],
+        [15,16,0,-53]
     ];
     
     _fontId = 0;
@@ -81,7 +82,7 @@ export class Renderer {
         }
 
         var start = 0;
-        if(this._fontId == 1) { 
+        if(this._fontId == 1 || this._fontId == 4) { 
             start = 3;
         }
 
@@ -93,6 +94,11 @@ export class Renderer {
                 var y_offset = 0;
                 if(this._fontId == 1) {
                     y_offset = ((y - 3) * (this._fontConfig[this._fontId][1] * 2))+(this._fontConfig[this._fontId][1] * 2) - 16;
+                    if(y == 3) {
+                        y_offset += 20;
+                    }
+                } else if(this._fontId == 4) {
+                    y_offset = ((y - 3) * (this._fontConfig[this._fontId][1] * 2))+(this._fontConfig[this._fontId][1] * 2) - 10;
                     if(y == 3) {
                         y_offset += 20;
                     }
@@ -142,7 +148,7 @@ export class Renderer {
                 for (let i = 0; i < this._waveData.length; i++) {
                     if(this._waveData[i] == 255) continue;
                     const y = Math.min(this._waveData[i], this._maxScope);
-                    this._ctx.fillRect(i, y+this._fontConfig[this._fontId][3], 1, 1);
+                    this._ctx.fillRect(i, y, 1, 1);
                 }
             }
         }

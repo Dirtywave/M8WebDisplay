@@ -31,7 +31,7 @@ export class Parser {
                         frame[11]);
 
                 } else {
-                    console.log('Bad RECT frame');
+                    console.log('Bad RECT frame ('+frame.length+')');
                 }
                 break;
 
@@ -46,7 +46,7 @@ export class Parser {
                         frame[8]);
 
                 } else {
-                    console.log('Bad TEXT frame');
+                    console.log('Bad TEXT frame ('+frame.length+')');
                 }
                 break;
 

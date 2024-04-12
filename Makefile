@@ -27,7 +27,7 @@ endif
 
 index.html: build/index.css js/main.js
 
-js/main.js: $(filter-out js/main.js,$(wildcard js/*.js)) build/shaders.js build/font1.js build/font2.js build/font3.js build/font4.js
+js/main.js: $(filter-out js/main.js,$(wildcard js/*.js)) build/shaders.js build/font1.js build/font2.js build/font3.js build/font4.js build/font5.js
 	@touch $@
 
 build/shaders.js: $(wildcard shaders/*.vert) $(wildcard shaders/*.frag)
@@ -60,6 +60,11 @@ build/font4.js: font4.png
 	@mkdir -p $(@D)
 	@printf "export const font4 = 'data:image/png;base64,$$($(BASE64) $^)';" > $@
 
+build/font5.js: font5.png
+	@echo Building $@
+	@mkdir -p $(@D)
+	@printf "export const font5 = 'data:image/png;base64,$$($(BASE64) $^)';" > $@
+
 build/main.js: js/main.js $(NPM)
 	@echo Building $@
 	@mkdir -p $(@D)
@@ -82,6 +87,9 @@ css/index.scss: $(filter-out css/index.scss,$(wildcard css/*.scss)) build/font3.
 	@touch $@
 
 css/index.scss: $(filter-out css/index.scss,$(wildcard css/*.scss)) build/font4.scss
+	@touch $@
+
+css/index.scss: $(filter-out css/index.scss,$(wildcard css/*.scss)) build/font5.scss
 	@touch $@
 
 build/font1.scss: m8stealth57.woff2
@@ -113,6 +121,14 @@ build/font4.scss: m8stealth99.woff2
 	@mkdir -p $(@D)
 	@printf "@font-face {\n\
 	    font-family: 'm8stealth1010';\n\
+	    src: url('data:font/woff2;base64,$$($(BASE64) $^)') format('woff2');\n\
+	}" > $@
+
+build/font5.scss: m8stealth99.woff2
+	@echo Building $@
+	@mkdir -p $(@D)
+	@printf "@font-face {\n\
+	    font-family: 'm8stealth1212';\n\
 	    src: url('data:font/woff2;base64,$$($(BASE64) $^)') format('woff2');\n\
 	}" > $@
 
