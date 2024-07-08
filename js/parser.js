@@ -12,6 +12,7 @@ export class Parser {
     _buffer = new Uint8Array(512);
     _i = 0;
     _renderer;
+    _lastColor = [0,0,0];
 
     constructor(renderer) {
         this._renderer = renderer;
@@ -21,6 +22,7 @@ export class Parser {
         switch (frame[0]) {
             case 0xfe:
                 if (frame.length === 12) {
+                    this._lastColor = [frame[9], frame[10], frame[11]];
                     this._renderer.drawRect(
                         frame[1] + frame[2] * 256,
                         frame[3] + frame[4] * 256,
@@ -29,7 +31,34 @@ export class Parser {
                         frame[9],
                         frame[10],
                         frame[11]);
-
+                } else if (frame.length === 8) {
+                    this._lastColor = [frame[5], frame[6], frame[7]];
+                    this._renderer.drawRect(
+                        frame[1] + frame[2] * 256,
+                        frame[3] + frame[4] * 256,
+                        1,
+                        1,
+                        frame[5],
+                        frame[6],
+                        frame[7]);
+                } else if (frame.length === 9) {
+                    this._renderer.drawRect(
+                        frame[1] + frame[2] * 256,
+                        frame[3] + frame[4] * 256,
+                        frame[5] + frame[6] * 256,
+                        frame[7] + frame[8] * 256,
+                        this._lastColor[0],
+                        this._lastColor[1],
+                        this._lastColor[2]);
+                } else if (frame.length === 5) {
+                    this._renderer.drawRect(
+                        frame[1] + frame[2] * 256,
+                        frame[3] + frame[4] * 256,
+                        1,
+                        1,
+                        this._lastColor[0],
+                        this._lastColor[1],
+                        this._lastColor[2]);
                 } else {
                     console.log('Bad RECT frame ('+frame.length+')');
                 }
