@@ -36,6 +36,7 @@ export class Renderer {
 
         this._canvas = document.getElementById('canvas')
         this._gl = this._canvas.getContext('webgl2', {
+            preserveDrawingBuffer: true,
             alpha: false,
             antialias: false
         });

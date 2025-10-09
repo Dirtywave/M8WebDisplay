@@ -24,9 +24,11 @@ setupSelect(
     { webgl2: 'WebGL2', old: 'Canvas + SVG' },
     'webgl2');
 
+setupToggle('record', 'Record Screen', false);
 setupToggle('snapPixels', 'Snap Pixels', true);
 setupToggle('virtualKeyboard', 'Virtual Keyboard', true);
 setupToggle('preventSleep', 'Prevent Sleep', false);
+setupButton('screenshot', 'Take Screenshot');
 setupButton('controlMapping', 'Control Mapping');
 setupButton('firmware', 'Load Firmware');
 setupButton('fullscreen', 'Fullscreen');

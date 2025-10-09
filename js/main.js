@@ -4,6 +4,7 @@
 import { UsbConnection } from './usb.js';
 import { SerialConnection } from './serial.js';
 import { Parser } from './parser.js';
+import { Recorder } from "./recorder.js"
 import { Renderer as OldRenderer } from './renderer.js';
 import { Renderer as GlRenderer } from './gl-renderer.js';
 import { show, hide, toggle, appendButton, on } from './util.js';
@@ -28,6 +29,7 @@ const renderer = Settings.get('displayType') === 'webgl2'
     : new OldRenderer(bg, setBackground);
 
 const parser = new Parser(renderer);
+const recorder = new Recorder();
 
 let resizeCanvas = (function() {
     const display = document.getElementById('display');
@@ -117,6 +119,16 @@ Settings.onChange('fullscreen', () => {
 });
 
 Settings.onChange('about', () => show('#info'));
+
+Settings.onChange('record', (value) => {
+    if (value) {
+        recorder.startRecording();
+    } else {
+        recorder.stopRecording();
+    }
+})
+
+Settings.onChange('screenshot', () => recorder.screenshot(renderer._ctx))
 
 function connectionChanged(isConnected) {
     if (isConnected) {
