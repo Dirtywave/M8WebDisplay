@@ -5,6 +5,10 @@ import { wait, on, off } from './util.js';
 
 let ctx;
 let enabled = true;
+let source;
+export const getAudioCtx = () => ctx;
+/** @returns {MediaStreamAudioSourceNode} */
+export const getAudioSource = () => source;
 
 export async function start(attempts = 1) {
     if (ctx || !enabled)
@@ -38,7 +42,7 @@ export async function start(attempts = 1) {
                 noiseSuppression: false
             } })
 
-        const source = ctx.createMediaStreamSource(stream);
+        source = ctx.createMediaStreamSource(stream);
         source.connect(ctx.destination);
 
         if (ctx.state !== 'running') {
