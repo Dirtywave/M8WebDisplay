@@ -34,14 +34,13 @@ export class Recorder {
     }
 
     screenshot(ctx) {
-        const data = this._canvas.toBlob((blob) => {
+        this._canvas.toBlob((blob) => {
             if (blob === null) {
                 return;
             }
             const url = URL.createObjectURL(blob)
             downloadFile(filename('m8-screenshot', 'png'), url)
         })
-        downloadFile(filename('m8-screenshot', 'png'), data)
     }
 
     startRecording() {
@@ -54,7 +53,7 @@ export class Recorder {
         }
 
         this._recorder = new MediaRecorder(this._stream, {
-            mimeType: "video/mp4"
+            mimeType: "video/webm"
         });
         const chunks = [];
         this._recorder.addEventListener('dataavailable', (event) => {
@@ -62,7 +61,7 @@ export class Recorder {
         })
         this._recorder.addEventListener('stop', () => {
             const url = URL.createObjectURL(new Blob(chunks));
-            downloadFile(filename('m8-recording', 'mp4'), url)
+            downloadFile(filename('m8-recording', 'webm'), url)
             chunks.length = 0;
         })
         this._recorder.start();
@@ -76,7 +75,7 @@ export class Recorder {
             this._recorder = undefined
         }
         if (this._stream !== undefined) {
-            for (var track of this._stream.getTracks()) {
+            for (const track of this._stream.getVideoTracks()) {
                 track.stop();
             }
             this._stream = undefined;
