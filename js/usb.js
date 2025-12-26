@@ -94,7 +94,7 @@ export class UsbConnection {
             const devices = (await navigator.usb.getDevices())
                 .filter(d =>
                     d.vendorId === 0x16c0 &&
-                    d.productId === 0x048a);
+                    (d.productId === 0x048a || d.productId === 0x048b));
             this._device = devices.length === 1 ? devices[0] : null;
 
             if (!this._device) {
@@ -145,10 +145,10 @@ export class UsbConnection {
         this._waitingForUserSelection = true;
         try {
             return await navigator.usb.requestDevice({
-                filters: [{
-                    vendorId: 0x16c0,
-                    productId: 0x048a
-                }]
+                filters: [
+                    { vendorId: 0x16c0, productId: 0x048a },
+                    { vendorId: 0x16c0, productId: 0x048b }
+                ]
             });
         } catch (err) {
             if (err.code !== DOMException.NOT_FOUND_ERR) {

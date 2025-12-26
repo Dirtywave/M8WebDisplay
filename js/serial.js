@@ -100,7 +100,7 @@ export class SerialConnection {
                 .filter(p => {
                     const info = p.getInfo();
                     return info.usbVendorId === 0x16c0 &&
-                        info.usbProductId === 0x048a
+                        (info.usbProductId === 0x048a || info.usbProductId === 0x048b)
                 });
             this._port = ports.length === 1 ? ports[0] : null;
 
@@ -142,10 +142,10 @@ export class SerialConnection {
         this._waitingForUserSelection = true;
         try {
             return await navigator.serial.requestPort({
-                filters: [{
-                    usbVendorId: 0x16c0,
-                    usbProductId: 0x048a
-                }]
+                filters: [
+                    { usbVendorId: 0x16c0, usbProductId: 0x048a },
+                    { usbVendorId: 0x16c0, usbProductId: 0x048b }
+                ]
             });
         } catch (err) {
             if (err.code !== DOMException.NOT_FOUND_ERR) {
